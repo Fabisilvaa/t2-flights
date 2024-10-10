@@ -4,6 +4,7 @@ import websockets
 from threading import Thread
 from flask import Flask, render_template, jsonify
 
+app = Flask(__name__)
 connected_clients = set()
 
 flight_data = {}
@@ -135,7 +136,10 @@ def start_websocket_listener():
     loop.run_until_complete(start2())
 
 def create_app():
-    app = Flask(__name__)
-    websocket_thread = Thread(target=start_websocket_listener)
+    websocket_thread = Thread(target=start_background_tasks)
     websocket_thread.start()
     return app
+
+# If running directly, start the Flask app
+if __name__ == "__main__":
+    create_app().run(debug=True)
