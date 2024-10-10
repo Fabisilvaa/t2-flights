@@ -224,14 +224,6 @@
         // Fetch the flight data every 5 seconds
         setInterval(fetchFlightData, 5000);
 
-
-        ws.onclose = function () {
-            console.log('WebSocket connection closed');
-        };
-
-        ws.onerror = function (error) {
-            console.log('WebSocket error: ' + error.message);
-        };
     </script>
 </body>
 </html>
