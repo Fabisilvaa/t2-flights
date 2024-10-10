@@ -74,47 +74,51 @@
 
         //ICONOS
         var landingIcon = L.icon({
-            iconUrl: 'https://t2-flights.onrender.com/static/landing-page.png',  
+            iconUrl: '/static/landing-page.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var takeOffIcon = L.icon({
-            iconUrl: 'https://t2-flights.onrender.com/static/take-off.png',  
+            iconUrl: '/static/take-off.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var crashedIcon = L.icon({
-            iconUrl: 'https://t2-flights.onrender.com/static/crash.png',  
+            iconUrl: '/static/crash.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var planeicon = L.icon({
-            iconUrl: 'https://t2-flights.onrender.com/static/plane.png',
+            iconUrl: '/static/plane.png',
             iconSize: [38, 38], // size of the icon
             shadowSize: [38, 38], // size of the shadow
             iconAnchor: [19, 19], // point of the icon which will correspond to marker's location
         });
 
+
         //MARCADORES AIRPORTS
-        function updateMap(flight) {
-  
-            const departureLat = flight.departure.lat;
-            const departureLon = flight.departure.long;
-            const destinationLat = flight.destination.lat;
-            const destinationLon = flight.destination.long;
+        function updateMap(flights) {
+            airportLayer.clearLayers();
 
-            const depmarker =L.marker([departureLat, departureLon]).addTo(airportLayer)
-            .bindPopup(`Name: ${flight.departure.name}, City:${flight.departure.city.name},  Country:${flight.departure.city.country.name}`);
+            flights.forEach(flight => {
+                const departureLat = flight.departure.lat;
+                const departureLon = flight.departure.long;
+                const destinationLat = flight.destination.lat;
+                const destinationLon = flight.destination.long;
 
-            const desmarker= L.marker([destinationLat, destinationLon]).addTo(airportLayer)
-            .bindPopup(`Name: ${flight.destination.name}, City:${flight.destination.city.name},  Country:${flight.destination.city.country.name}`);
-            desmarker._icon.classList.add("huechange");
-            
-            var latlngs =  [depmarker.getLatLng(), desmarker.getLatLng()]; //para unir ambos markers
-            L.polyline(latlngs, {color: 'blue'}).addTo(airportLayer); //linea que une los dos aeropuertos
+                const depmarker =L.marker([departureLat, departureLon]).addTo(airportLayer)
+                .bindPopup(`Name: ${flight.departure.name}, City:${flight.departure.city.name},  Country:${flight.departure.city.country.name}`);
+
+                const desmarker= L.marker([destinationLat, destinationLon]).addTo(airportLayer)
+                .bindPopup(`Name: ${flight.destination.name}, City:${flight.destination.city.name},  Country:${flight.destination.city.country.name}`);
+                desmarker._icon.classList.add("huechange");
+
+                var latlngs =  [depmarker.getLatLng(), desmarker.getLatLng()]; //para unir ambos markers
+                L.polyline(latlngs, {color: 'blue'}).addTo(airportLayer); //linea que une los dos aeropuertos
+            });
         }
         //MARCADORES AVIONES
         function updatePlaneMarkers(planes) { 
@@ -197,17 +201,18 @@
         async function fetchFlightData() {
             try {
 
-                const flightResponse = await fetch('https://t2-flights.onrender.com/flights');
+                const flightResponse = await fetch('/flights');
                 const flights = await flightResponse.json();
 
-                const planeResponse = await fetch('https://t2-flights.onrender.com/planes');
+                const planeResponse = await fetch('/planes');
                 const planes = await planeResponse.json();
 
                 //update del mapa AIRPORTS
-                //updateMap(Object.values(flights));
-                Object.values(flights).forEach(flight => {
-                    updateMap(flight);
-                });
+                updateMap(Object.values(flights));
+        
+                //Object.values(flights).forEach(flight => {
+                //updateMap(flight);
+                //});
 
                 //update del mapa AVIONES
                 updatePlaneRoute(Object.values(planes));
@@ -225,6 +230,14 @@
         // Fetch the flight data every 5 seconds
         setInterval(fetchFlightData, 5000);
 
+
+        ws.onclose = function () {
+            console.log('WebSocket connection closed');
+        };
+
+        ws.onerror = function (error) {
+            console.log('WebSocket error: ' + error.message);
+        };
     </script>
 </body>
 </html>
