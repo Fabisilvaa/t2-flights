@@ -4,7 +4,9 @@ import websockets
 from threading import Thread
 from flask import Flask, render_template, jsonify
 
+
 app = Flask(__name__)
+
 connected_clients = set()
 
 flight_data = {}
@@ -103,19 +105,7 @@ async def start2():
 
         await listen_to_websocket(websocket)
 
-async def take_off(ws):  #notifies when a plane has taken off with its id
-    TakeoffEvent = await ws.recv()
-    print("Hubo un despegue {TakeoffEvent.flight_id}")
-
-async def landing(ws): #notifies when a plane has landed and with id
-    LandingEvent = await ws.recv()
-    print("Hubo un aterrizaje{LandingEvent.flight_id}")
-
-async def crashed(ws): #notifies when a plane has crashed and returns its id
-    CrashedEvent = await ws.recv()
-    print("Hubo un aterrizaje{CrashedEvent.flight_id}")
-
-async def message(ws): #for the chat function
+async def message(ws): #chat
     print("Hubo un nuevo mensaje")
 
 ###################
@@ -140,6 +130,11 @@ def create_app():
     websocket_thread.start()
     return app
 
-# If running directly, start the Flask app
 if __name__ == "__main__":
-    create_app().run(debug=True)
+
+    websocket_thread = Thread(target=start_websocket_listener)
+    websocket_thread.daemon = True
+    websocket_thread.start()
+
+    # Start Flask app
+    app.run(debug=True)
