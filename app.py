@@ -137,14 +137,7 @@ def start_websocket_listener():
     asyncio.set_event_loop(loop)
     loop.run_until_complete(start2())
 
-
-if __name__ == "__main__":
-    # Start the WebSocket listener in a background thread
-    
-
+def create_app():
     websocket_thread = Thread(target=start_websocket_listener)
-    #websocket_thread.daemon = True
     websocket_thread.start()
-
-    # Start Flask app
-    app.run(debug=True)
+    return app
