@@ -111,8 +111,6 @@ async def start2():
             print(f"WebSocket connection closed: {e}. Reconnecting in 5 seconds...")
             time.sleep(5)
 
-async def message(ws): #chat
-    print("Hubo un nuevo mensaje")
 
 ###################
 
