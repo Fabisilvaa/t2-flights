@@ -95,15 +95,20 @@ async def listen_to_websocket(websocket):
         print(f"Error in WebSocket communication: {e}")        
 
 async def start2():
-    async with websockets.connect(WS_URL) as websocket:
-        join_event = {
-            "type": "join",
-            "id": NALUMNO,
-        }
-        await websocket.send(json.dumps(join_event))
-        print(f"JOIN event sent: {join_event}")
+     while True:
+        try:
+            async with websockets.connect(WS_URL) as websocket:
+                join_event = {
+                    "type": "join",
+                    "id": NALUMNO,
+                }
+                await websocket.send(json.dumps(join_event))
+                print(f"JOIN event sent: {join_event}")
 
-        await listen_to_websocket(websocket)
+                await listen_to_websocket(websocket)
+        except websockets.ConnectionClosed as e:
+            print(f"WebSocket connection closed: {e}. Reconnecting in 5 seconds...")
+            time.sleep(5)
 
 async def message(ws): #chat
     print("Hubo un nuevo mensaje")
@@ -126,15 +131,14 @@ def start_websocket_listener():
     loop.run_until_complete(start2())
 
 def create_app():
-    websocket_thread = Thread(target=start_websocket_listener)
-    websocket_thread.start()
+    if not hasattr(app, 'websocket_thread'):
+        app.websocket_thread = Thread(target=start_websocket_listener)
+        app.websocket_thread.daemon = True
+        app.websocket_thread.start()
     return app
 
 if __name__ == "__main__":
 
-    websocket_thread = Thread(target=start_websocket_listener)
-    websocket_thread.daemon = True
-    websocket_thread.start()
-
+     create_app()
     # Start Flask app
     app.run(debug=True)
