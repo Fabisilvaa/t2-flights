@@ -73,25 +73,25 @@
 
         //ICONOS
         var landingIcon = L.icon({
-            iconUrl: '/static/landing-page.png',  
+            iconUrl: 'https://t2-flights.onrender.com/static/landing-page.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var takeOffIcon = L.icon({
-            iconUrl: '/static/take-off.png',  
+            iconUrl: 'https://t2-flights.onrender.com/static/take-off.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var crashedIcon = L.icon({
-            iconUrl: '/static/crash.png',  
+            iconUrl: 'https://t2-flights.onrender.com/static/crash.png',  
             iconSize: [38, 38],
             iconAnchor: [25, 25]
         });
 
         var planeicon = L.icon({
-            iconUrl: '/static/plane.png',
+            iconUrl: 'https://t2-flights.onrender.com/static/plane.png',
             iconSize: [38, 38], // size of the icon
             shadowSize: [38, 38], // size of the shadow
             iconAnchor: [19, 19], // point of the icon which will correspond to marker's location
@@ -196,10 +196,10 @@
         async function fetchFlightData() {
             try {
 
-                const flightResponse = await fetch('/flights');
+                const flightResponse = await fetch('https://t2-flights.onrender.com/flights');
                 const flights = await flightResponse.json();
 
-                const planeResponse = await fetch('/planes');
+                const planeResponse = await fetch('https://t2-flights.onrender.com/planes');
                 const planes = await planeResponse.json();
 
                 //update del mapa AIRPORTS
