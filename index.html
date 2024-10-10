@@ -1,9 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Tarea 2</title>
-  </head>
-  <body>
-    
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        img.huechange { filter: hue-rotate(120deg); }
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>Flight Tracker</h1>
+    <div id="map"></div>
+
+    <table id="f-tabla">
+        <thead>
+            <tr>
+                <th>Flight ID</th>
+                <th>Airline</th>
+                <th>Captain</th>
+                <th>Destination</th>
+                <th>ETA</th>
+                <th>Distance</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id = "tbodyy">
+            <tr id="placeholder-row">
+                <td colspan="7">No flights available</td>
+            </tr>
+        </tbody>
+    </table> 
+
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        //iniciar mapa
+        var map = L.map('map').setView([20, 0], 2);  // Default to a world view
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        var markerLayer = L.layerGroup().addTo(map);
+        var airportLayer = L.layerGroup().addTo(map);
+        var routeLayer = L.layerGroup().addTo(map);
+
+        var layerControl = L.control.layers({}, {  // No base layers, only overlay layers
+        "Planes": markerLayer,
+        "Airports": airportLayer,
+        "Current routes": routeLayer,
+        }).addTo(map);
+
+        //MARCADORES AIRPORTS
+        function updateMap(flight) {
+            
+  
+            const departureLat = flight.departure.lat;
+            const departureLon = flight.departure.long;
+            const destinationLat = flight.destination.lat;
+            const destinationLon = flight.destination.long;
+
+            const depmarker =L.marker([departureLat, departureLon]).addTo(airportLayer)
+            .bindPopup(`Name: ${flight.departure.name}, City:${flight.departure.city.name},  Country:${flight.departure.city.country.name}`);
+                
+            const desmarker= L.marker([destinationLat, destinationLon]).addTo(airportLayer)
+            .bindPopup(`Name: ${flight.destination.name}, City:${flight.destination.city.name},  Country:${flight.departure.city.country.name}`);
+            desmarker._icon.classList.add("huechange");
+
+            var latlngs =  [depmarker.getLatLng(), desmarker.getLatLng()]; //para unir ambos markers
+            L.polyline(latlngs, {color: 'blue'}).addTo(airportLayer); //linea que une los dos aeropuertos
+        }
+
+        //MARCADORES AVIONES
+        function updatePlaneMarkers(planes) { 
+            markerLayer.clearLayers();
+
+            var planeicon = L.icon({
+                iconUrl: '/static/free-airplane-icon.png',
+                iconSize: [38, 38], // size of the icon
+                shadowSize: [38, 38], // size of the shadow
+                iconAnchor: [19, 19], // point of the icon which will correspond to marker's location
+            });
+
+            planes.forEach(plane => {
+                const currentLat = plane.lat;
+                const currentLon = plane.long;
+
+                L.marker([currentLat, currentLon], { icon: planeicon }).addTo(markerLayer)
+                    .bindPopup(`
+                        <strong>Flight ID:</strong> ${plane.flight_id}<br>
+                        <strong>Airline:</strong> ${plane.airline}<br>
+                        <strong>ETA:</strong> ${plane.eta}<br>
+                        <strong>Captain:</strong> ${plane.captain}<br>
+                        <strong>Distance:</strong> ${plane.distance} km<br>
+                        <strong>Status:</strong> ${plane.status}
+                    `);
+            });
+        }
+
+        function updatePlaneRoute(planes) { 
+
+            var routeIcon = L.icon({
+                iconUrl: '/static/dot.png',
+                iconSize: [10, 10],
+                iconAnchor: [5, 5]
+            });
+
+            planes.forEach(plane => {
+                const currentLat = plane.lat;
+                const currentLon = plane.long;
+                
+                L.marker([currentLat, currentLon], { icon: routeIcon }).addTo(routeLayer);
+            });
+        }
+
+
+        //ACTUALIZAR TABLA
+        function updateFlightTable(planes) {
+            const tbody = document.getElementById('tbodyy');
+            tbody.innerHTML = ''; // reset la tabla
+
+            planes.forEach(plane => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${plane.flight_id}</td>
+                    <td>${plane.airline}</td>
+                    <td>${plane.captain}</td>
+                    <td>${plane.heading_lat}, ${plane.heading_long}</td>
+                    <td>${plane.eta}</td>
+                    <td>${plane.distance}</td>
+                    <td>${plane.status}</td>   
+                    `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function fetchFlightData() {
+            try {
+
+                const flightResponse = await fetch('/flights');
+                const flights = await flightResponse.json();
+
+                const planeResponse = await fetch('/planes');
+                const planes = await planeResponse.json();
+
+                //update del mapa AIRPORTS
+                //updateMap(Object.values(flights));
+                Object.values(flights).forEach(flight => {
+                    updateMap(flight);
+                });
+
+                //update del mapa AVIONES
+                updatePlaneRoute(Object.values(planes));
+            
+                updatePlaneMarkers(Object.values(planes));
+
+        
+                updateFlightTable(Object.values(planes));
+                // Update TABLA
+
+            } catch (error) {
+                console.error('Error fetching flight data:', error);
+            }
+        }
+        // Fetch the flight data every 5 seconds
+        setInterval(fetchFlightData, 5000);
+
+
+        ws.onclose = function () {
+            console.log('WebSocket connection closed');
+        };
+
+        ws.onerror = function (error) {
+            console.log('WebSocket error: ' + error.message);
+        };
+    </script>
+</body>
 </html>
