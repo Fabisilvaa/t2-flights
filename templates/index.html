@@ -97,8 +97,6 @@
             iconAnchor: [19, 19], // point of the icon which will correspond to marker's location
         });
 
-        let addedAirports = {};
-
         //MARCADORES AIRPORTS
         function updateMap(flight) {
   
@@ -106,9 +104,6 @@
             const departureLon = flight.departure.long;
             const destinationLat = flight.destination.lat;
             const destinationLon = flight.destination.long;
-            
-            const depKey = `${departureLat},${departureLon}`;
-            const desKey = `${destinationLat},${destinationLon}`;
 
             const depmarker =L.marker([departureLat, departureLon]).addTo(airportLayer)
             .bindPopup(`Name: ${flight.departure.name}, City:${flight.departure.city.name},  Country:${flight.departure.city.country.name}`);
@@ -116,7 +111,7 @@
             const desmarker= L.marker([destinationLat, destinationLon]).addTo(airportLayer)
             .bindPopup(`Name: ${flight.destination.name}, City:${flight.destination.city.name},  Country:${flight.destination.city.country.name}`);
             desmarker._icon.classList.add("huechange");
-
+            
             var latlngs =  [depmarker.getLatLng(), desmarker.getLatLng()]; //para unir ambos markers
             L.polyline(latlngs, {color: 'blue'}).addTo(airportLayer); //linea que une los dos aeropuertos
         }
