@@ -12,7 +12,7 @@ connected_clients = set()
 flight_data = {}
 plane_data = {}
 
-WS_URL = " https://tarea-2-2024-2-prod-902587603657.us-central1.run.app"
+WS_URL = "wss://tarea-2.2024-2.tallerdeintegracion.cl/connect"
 NALUMNO = "19638558"
 
 ###################
