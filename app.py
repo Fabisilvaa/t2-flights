@@ -136,7 +136,7 @@ def start_websocket_listener():
     loop.run_until_complete(start2())
 
 def create_app():
-    websocket_thread = Thread(target=start_background_tasks)
+    websocket_thread = Thread(target=start_websocket_listener)
     websocket_thread.start()
     return app
 
